@@ -1,0 +1,3 @@
+Licensed under the GPLv3, sshmnt is a script that uses sshfs and fuse to help manage multiple ssh based network-filesystem profiles and to help organize + simplify mounting and unmounting. Compatible with ipv4 and ipv6, sshmnt also allows normal ssh connections and is capable of displaying which profiles are currently online/offline.
+
+Install to $PATH and run 'sshmnt -h' to generate the config file in ~/.config (or $XDG_CONFIG_HOME) if its set, and display a list of available commands
