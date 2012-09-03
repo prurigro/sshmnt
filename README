@@ -14,14 +14,14 @@ Available options:
 Profile each use a single line in the config file, and contain a series of headings which are each followed by a '=', then a value before ending with a ':'.
 
 Available headings:
-    location: this is the name of the profile (required)
-    login: the name of the user to login as (required)
-    ip: the url or ip of the server (required, ipv6 addresses must be surrounded in [ and ])
-    port: the port the ssh daemon is using (required, the default port used by most daemons is 22)
-    path: the remote directory to use as the highest level of the mounted share (required, mount only)
-    mntopts: sshfs mount options exactly as they'd appear following the -o option (optional, mount only)
-    
+location: this is the name of the profile (required)
+login: the name of the user to login as (required)
+ip: the url or ip of the server (required, ipv6 addresses must be surrounded in [ and ])
+port: the port the ssh daemon is using (required, the default port used by most daemons is 22)
+path: the remote directory to mount (required, mount only)
+mntopts: sshfs mount options as they'd appear following the -o option (optional, mount only)
+
 An example of what a profile might look like is:
-    location=myconnection:login=root:ip=myconnection.com:port=22:path=/root:mntopts=uid=99,gid=99:
-    
+location=myconnection:login=root:ip=myconnection.com:port=22:path=/root:mntopts=uid=99,gid=99:
+
 Any required field that isn't included will prompt you for a value when connecting, so variable fields can be left out and dealt with like this.
