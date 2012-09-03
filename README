@@ -1,3 +1,27 @@
-Licensed under the GPLv3, sshmnt is a script that uses sshfs and fuse to help manage multiple ssh based network-filesystem profiles and to help organize + simplify mounting and unmounting. Compatible with ipv4 and ipv6, sshmnt also allows normal ssh connections and is capable of displaying which profiles are currently online/offline.
+Licensed under the GPLv3, sshmnt is a script that uses sshfs and fuse to help manage multiple ssh based network-filesystem profiles and to help organize + simplify mounting and unmounting. Compatible with ipv4 and ipv6, sshmnt also allows normal ssh connections using profiles, and is capable of displaying which are currently mounted.
 
-Install to $PATH and run 'sshmnt -h' to generate the config file in ~/.config (or $XDG_CONFIG_HOME) if its set, and display a list of available commands
+Install to $PATH and run to generate the config file in ~/.config (or $XDG_CONFIG_HOME if its set to something else).
+
+Usage: 'sshmnt option [arguments]'
+Available options:
+    -m (or m) [location]: attempts to mount location
+    -u (or u) [location]: attempts to unmount location
+    -s (or s) [location]: attempts to login to location
+    -l (or l): displays a list of all defined locations
+    -e (or e): starts editing the config file
+    -h (or h): displays this help message
+
+Profile each use a single line in the config file, and contain a series of headings which are each followed by a '=', then a value before ending with a ':'.
+
+Available headings:
+    location: this is the name of the profile (required)
+    login: the name of the user to login as (required)
+    ip: the url or ip of the server (required, ipv6 addresses must be surrounded in [ and ])
+    port: the port the ssh daemon is using (required, the default port used by most daemons is 22)
+    path: the remote directory to use as the highest level of the mounted share (required, mount only)
+    mntopts: sshfs mount options exactly as they'd appear following the -o option (optional, mount only)
+    
+An example of what a profile might look like is:
+    location=myconnection:login=root:ip=myconnection.com:port=22:path=/root:mntopts=uid=99,gid=99:
+    
+Any required field that isn't included will prompt you for a value when connecting, so variable fields can be left out and dealt with like this.
