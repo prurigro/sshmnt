@@ -67,9 +67,9 @@ function connect {
             echo -n "status: "
             checkmountpath ${profile[0]}
             if [ $? = "1" ]; then
-                echo -e "ONLINE\n"
+                echo -e "CONNECTED\n"
             else
-                echo -e "OFFLINE\n"
+                echo -e "DISCONNECTED\n"
             fi
         fi
     fi
