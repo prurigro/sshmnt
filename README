@@ -7,6 +7,7 @@ Available options:
     -m (or m) [location]: attempts to mount location
     -u (or u) [location]: attempts to unmount location
     -s (or s) [location]: attempts to login to location
+    -i (or i) [location]: displays information about a given location
     -l (or l): displays a list of all defined locations
     -e (or e): starts editing the config file
     -h (or h): displays this help message

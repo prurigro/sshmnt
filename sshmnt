@@ -10,7 +10,7 @@
 #                                                     #
 # Developer: Prurigro                                 #
 # Contact: prurigro at gmail dot com                  #
-# Version: 1.5                                        #
+# Version: 1.6                                        #
 #                                                     #
 # If you find this script useful but have ideas about #
 # how to make it better, found bugs, need help using  #
@@ -35,40 +35,51 @@ else
   confdir=$HOME/.config
 fi
 
-export config='sshmntconfig'
-export exitstatus=0
-export locations
-export mountpath
-export editor
-export value
+config='sshmntconfig'
+exitstatus=0
 
 function connect {
     echo
-    echo -e "Connecting to ${profile[0]}:\n"
+    if [ $1 = "-m" -o $1 = "m" ]; then
+      echo "mounting: ${profile[0]}"
+    elif [ $1 = "-s" -o $1 = "s" ]; then
+      echo "connecting to: ${profile[0]}"
+    elif [ $1 = "-i" -o $1 = "i" ]; then
+      echo "location: ${profile[0]}"
+    fi
     echo "${headinglist[1]}: ${profile[1]}"
     echo "${headinglist[2]}: ${profile[2]}"
     echo "${headinglist[3]}: ${profile[3]}"
-    if [ ! -z "${profile[5]}" ]; then
-        echo "mount options: ${profile[5]}"
-        mountoptions="-o ${profile[5]}"
-    fi
-    if [ $1 = "-m" -o $1 = "m" ]; then
-        echo -e "${headinglist[4]}: ${profile[4]}\n"
-        echo -e "This will be mounted at :$mountpath/${profile[0]}\n"
-        sshfs "${profile[3]}"@"${profile[1]}":"${profile[4]}" "$mountpath"/"${profile[0]}" -p "${profile[2]}" ${mountoptions}
-    elif [ $1 = "-s" -o $1 = "s" ]; then
+    if [ $1 = "-s" -o $1 = "s" ]; then
         echo
         ssh "${profile[3]}"@"${profile[1]}" -p "${profile[2]}"
     else
-        error "generic"
+        echo "${headinglist[4]}: ${profile[4]}"
+        if [ ! -z "${profile[5]}" ]; then
+            echo "mount options: ${profile[5]}"
+            mountoptions="-o ${profile[5]}"
+        fi
+        if [ $1 = "-m" -o $1 = "m" ]; then
+            sshfs "${profile[3]}"@"${profile[1]}":"${profile[4]}" "${mountpath}/${profile[0]}" -p "${profile[2]}" ${mountoptions} && \
+            echo -e "\nRemote directory now mounted at: ${mountpath}/${profile[0]}\n"
+        elif [ $1 = "-i" -o $1 = "i" ]; then
+            echo "${headinglist[6]}: ${mountpath}/${profile[0]}"
+            echo -n "status: "
+            checkmountpath ${profile[0]}
+            if [ $? = "1" ]; then
+                echo -e "ONLINE\n"
+            else
+                echo -e "OFFLINE\n"
+            fi
+        fi
     fi
 }
 
 function findvalue {
-    if [ $(echo "$1" | grep -c "ip\=\[") = 1 -a "$2" = "ip" ]; then
-        value=$(echo "$1" | grep "$2"\=\\[[^\\]*\\]\: -E -o | sed s/\\[// | sed s/\\]:$/:/)
+    if [ $(echo "$1" | \grep -c "ip\=\[") = 1 -a "$2" = "ip" ]; then
+        value=$(echo "$1" | \grep "$2"\=\\[[^\\]*\\]\: -E -o | sed s/\\[// | sed s/\\]:$/:/)
     else
-        value=$(echo "$1" | grep "$2"\=[^\:]*\: -E -o)
+        value=$(echo "$1" | \grep "$2"\=[^\:]*\: -E -o)
     fi
 
     if [ -n "$value" ]; then
@@ -83,7 +94,7 @@ function findvalue {
 #Reads config file and loads information into the variables
 function parseconf {
     #If an option that requires mountpath is selected, but the mountpath line is missing, use user input
-    if [ $(cat "$2" | grep -E ^"${headinglist[6]}" -c) = 0 ]; then
+    if [ $(cat "$2" | \grep -E ^"${headinglist[6]}" -c) = 0 ]; then
         if [ "$3" = "m" -o "$3" = "-m" -o "$3" = "u" -o "$3" = "-u" -o "$3" = "l" -o "$3" = "-l" ]; then
             echo "The mountpath line is missing from $confdir/$config"
             echo "Please add one like the following example"
@@ -102,7 +113,7 @@ function parseconf {
     fi
 
     #If the editor option is selected, but the editor line is missing, use user input
-    if [ $(cat "$2" | grep -E ^"${headinglist[7]}" -c) = 0 ]; then
+    if [ $(cat "$2" | \grep -E ^"${headinglist[7]}" -c) = 0 ]; then
         if [ "$3" = "e" -o "$3" = "-e" ]; then
             echo "The editor line is missing from $confdir/$config"
             echo "Please add one like the following example"
@@ -121,7 +132,7 @@ function parseconf {
     fi
 
     while read line; do
-        if [ $(echo "$line" | grep ^\ *# -c) = 0 ]; then
+        if [ $(echo "$line" | \grep ^\ *# -c) = 0 ]; then
             #Mount Path
             findvalue "$line" "${headinglist[6]}"
             if [ "$?" = 0 ]; then
@@ -137,12 +148,12 @@ function parseconf {
             #Location
             findvalue "$line" "${headinglist[0]}"
             if [ "$?" = 0 ]; then
-                if [ $(echo "$locations" | grep "$value" -c) != "0" ]; then
+                if [ $(echo "$locations" | \grep "$value" -c) != "0" ]; then
                     error "config"
                 fi
                 locations="$locations$value\n"
                 if [ -n "$value" -a "$value" = "$1" ]; then
-                    export x=0
+                    x=0
                     while [ $x -lt $((${#headinglist[@]} - 1)) ]; do
                         findvalue "$line" ${headinglist[$x]}
                         profile[$x]="$value"
@@ -164,8 +175,9 @@ function parseconf {
             echo "Temporary location: $1"
             profile[0]="$1"
         fi
+
         x=1
-        export y=$((${#headinglist[@]}-3))
+        y=$((${#headinglist[@]}-3))
 
         #If its ssh don't worry about 'path', if its unmount skip this
         if [ "$3" = "-s" -o "$3" = "s" ]; then
@@ -207,7 +219,7 @@ function parseconf {
 
 #Returns true if the mount folder exists in mtab (and is thus mounted), false otherwise
 function checkmountpath {
-    if [ $(grep "$mountpath/$1 " /etc/mtab -c) = "0" ]; then
+    if [ $(\grep "$mountpath/$1 " /etc/mtab -c) = "0" ]; then
         return 0
     else
         return 1
@@ -257,6 +269,7 @@ function help {
     echo -e "\t-m (or m) location: attempts to mount location"
     echo -e "\t-u (or u) location: attempts to unmount location"
     echo -e "\t-s (or s) location: attempts to login to location"
+    echo -e "\t-i (or i) location: displays information about a given location"
     echo -e "\t-l (or l): displays a list of all defined locations"
     echo -e "\t-e (or e): starts editing the config file"
     echo -e "\t-h (or h): displays this help message"
@@ -291,6 +304,9 @@ function error {
             ;;
         createconfig)
             echo "There was an error creating your config file"
+            ;;
+        missing)
+            echo "The requested profile does not exist"
             ;;
         generic)
             echo "There was an error running sshmnt"
@@ -401,6 +417,12 @@ elif [ -n "$1" -a -n "$2" ]; then
             error "notmounted"
         fi
     elif [ "$1" = "s" -o "$1" = "-s" ]; then
+        connect "$1"
+    elif [ "$1" = "-i" -o "$1" = "i" ]; then
+        if [ $(cat "$confdir/$config" | \grep -c -E "location=$2:") = 0 ]; then
+            error "missing"
+            exit 1
+        fi
         connect "$1"
     else
         error "syntax"
