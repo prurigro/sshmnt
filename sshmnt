@@ -76,7 +76,7 @@ function connect {
 }
 
 function findvalue {
-    if [ $(echo "$1" | \grep -c "ip\=\[") = 1 -a "$2" = "ip" ]; then
+    if [ $(echo "$1" | \grep -c "ip=\[") = 1 -a "$2" = "ip" ]; then
         value=$(echo "$1" | \grep "$2"\=\\[[^\\]*\\]\: -E -o | sed s/\\[// | sed s/\\]:$/:/)
     else
         value=$(echo "$1" | \grep "$2"\=[^\:]*\: -E -o)
